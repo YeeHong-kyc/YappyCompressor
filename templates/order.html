@@ -18,10 +18,16 @@
                 <div class="company-name">Yappy <span>Compressor</span></div>
             </div>
             <div class="nav-links">
-                <span class="user-info">Welcome, {{ session.username }}!</span>
-                <a href="{{ url_for('index') }}">Home</a>
-                <a href="{{ url_for('track') }}">My Orders</a>
-                <a href="{{ url_for('logout') }}">Logout</a>
+                <a href="{{ url_for('company') }}">Company Info</a>
+                {% if session.user_id %}
+                    <span class="user-info">Welcome, {{ session.username }}!</span>
+                    <a href="{{ url_for('index') }}">Home</a>
+                    <a href="{{ url_for('track') }}">My Orders</a>
+                    <a href="{{ url_for('logout') }}">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}">Login</a>
+                    <a href="{{ url_for('register') }}">Register</a>
+                {% endif %}
             </div>
         </div>
     </header>
@@ -30,6 +36,7 @@
         <div class="form-container" style="max-width: 500px;">
             <h1>Confirm Your Order</h1>
             
+            {% if product %}
             <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px; margin-bottom: 1.5rem;">
                 <h3 style="margin-bottom: 0.5rem;">{{ product.name }}</h3>
                 <p><strong>Category:</strong> {{ product.category }}</p>
@@ -45,6 +52,12 @@
                 </div>
                 <button type="submit" class="btn btn-success" style="width: 100%;">Place Order</button>
             </form>
+            {% else %}
+            <div style="background: #fee2e2; padding: 1.5rem; border-radius: 10px; text-align: center;">
+                <p style="color: #dc2626;">Error: Product not found. Please go back and try again.</p>
+                <a href="{{ url_for('index') }}" class="btn" style="margin-top: 1rem;">Back to Products</a>
+            </div>
+            {% endif %}
             
             <div style="text-align: center; margin-top: 1rem;">
                 <a href="{{ url_for('index') }}" style="color: #666; text-decoration: none;">Cancel</a>
@@ -53,7 +66,28 @@
     </div>
 
     <footer class="footer">
-        <p>&copy; 2024 Yappy Compressor. All rights reserved.</p>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Yappy Compressor Sdn Bhd</h4>
+                <p>No. 19, Jalan Radin Terbagus</p>
+                <p>Bandar Baru Seri Petaling</p>
+                <p>57000 W.P. Kuala Lumpur</p>
+            </div>
+            <div class="footer-section">
+                <h4>Contact Us</h4>
+                <p><span class="contact-icon">📞</span> 03-9363033</p>
+                <p><span class="contact-icon">✉️</span> yappyethantan@yppycomp.com</p>
+            </div>
+            <div class="footer-section">
+                <h4>Payment</h4>
+                <p>Cheque payable to:</p>
+                <p><strong>Yappy Compressor Sdn Bhd</strong></p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Yappy Compressor Sdn Bhd. All rights reserved.</p>
+            <p style="margin-top: 0.5rem;">For invoice inquiries, please contact 03-9363033</p>
+        </div>
     </footer>
 </body>
 </html>
