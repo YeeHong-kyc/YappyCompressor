@@ -257,6 +257,23 @@ def setup_static_files():
     except Exception as e:
         print(f"❌ Error creating static directories: {e}")
 
+@app.route('/debug')
+def debug():
+    """Debug route to check database status"""
+    try:
+        product_count = Compressor.query.count()
+        user_count = User.query.count()
+        return f"""
+        <h1>Debug Info</h1>
+        <p>Products in database: {product_count}</p>
+        <p>Users in database: {user_count}</p>
+        <p>Database path: {app.config['SQLALCHEMY_DATABASE_URI']}</p>
+        <p>RENDER env: {os.environ.get('RENDER', 'Not set')}</p>
+        <p>PORT env: {os.environ.get('PORT', 'Not set')}</p>
+        """
+    except Exception as e:
+        return f"Error: {e}"
+
 # Initialize database when app starts
 print("🚀 Starting Yappy Compressor application...")
 print(f"📁 Database path: {app.config['SQLALCHEMY_DATABASE_URI']}")
