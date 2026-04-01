@@ -19,15 +19,10 @@
             </div>
             <div class="nav-links">
                 <a href="{{ url_for('company') }}">Company Info</a>
-                {% if session.user_id %}
-                    <span class="user-info">Welcome, {{ session.username }}!</span>
-                    <a href="{{ url_for('index') }}">Home</a>
-                    <a href="{{ url_for('track') }}">My Orders</a>
-                    <a href="{{ url_for('logout') }}">Logout</a>
-                {% else %}
-                    <a href="{{ url_for('login') }}">Login</a>
-                    <a href="{{ url_for('register') }}">Register</a>
-                {% endif %}
+                <span class="user-info">Welcome, {{ session.username }}!</span>
+                <a href="{{ url_for('index') }}">Home</a>
+                <a href="{{ url_for('track') }}">My Orders</a>
+                <a href="{{ url_for('logout') }}">Logout</a>
             </div>
         </div>
     </header>
@@ -54,7 +49,7 @@
             </form>
             {% else %}
             <div style="background: #fee2e2; padding: 1.5rem; border-radius: 10px; text-align: center;">
-                <p style="color: #dc2626;">Error: Product not found. Please go back and try again.</p>
+                <p style="color: #dc2626;">Product not found. Please go back and try again.</p>
                 <a href="{{ url_for('index') }}" class="btn" style="margin-top: 1rem;">Back to Products</a>
             </div>
             {% endif %}
