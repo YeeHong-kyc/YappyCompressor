@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order - Yappy Compressor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="{{ url_for('static', filename='images/logo.jpg') }}" 
+                     alt="Yappy Compressor Logo" 
+                     class="logo-image"
+                     onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'logo-placeholder\'>YC</div>'">
+                <div class="company-name">Yappy <span>Compressor</span></div>
+            </div>
+            <div class="nav-links">
+                <a href="{{ url_for('company') }}">Company Info</a>
+                <span class="user-info">Welcome, {{ session.username }}!</span>
+                <a href="{{ url_for('index') }}">Home</a>
+                <a href="{{ url_for('track') }}">My Orders</a>
+                <a href="{{ url_for('logout') }}">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="form-container" style="max-width: 500px;">
+            <h1>Confirm Your Order</h1>
+            
+            <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px; margin-bottom: 1.5rem;">
+                <h3 style="margin-bottom: 0.5rem;">{{ product.name }}</h3>
+                <p><strong>Category:</strong> {{ product.category }}</p>
+                <p><strong>Price per unit:</strong> RM {{ "%.2f"|format(product.price) }}</p>
+                <p><strong>Unit:</strong> {{ product.unit }}</p>
+                <p><strong>Description:</strong> {{ product.description }}</p>
+            </div>
+            
+            <form action="{{ url_for('place_order', product_id=product.id) }}" method="POST">
+                <div class="form-group">
+                    <label for="quantity">Quantity:</label>
+                    <input type="number" name="quantity" id="quantity" value="1" min="1" required>
+                </div>
+                <button type="submit" class="btn btn-success" style="width: 100%;">Place Order</button>
+            </form>
+            
+            <div style="text-align: center; margin-top: 1rem;">
+                <a href="{{ url_for('index') }}" style="color: #666; text-decoration: none;">Cancel</a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Yappy Compressor Sdn Bhd</h4>
+                <p>No. 19, Jalan Radin Terbagus</p>
+                <p>Bandar Baru Seri Petaling</p>
+                <p>57000 W.P. Kuala Lumpur</p>
+            </div>
+            <div class="footer-section">
+                <h4>Contact Us</h4>
+                <p><span class="contact-icon">📞</span> 03-9363033</p>
+                <p><span class="contact-icon">✉️</span> yappyethantan@yppycomp.com</p>
+            </div>
+            <div class="footer-section">
+                <h4>Payment</h4>
+                <p>Cheque payable to:</p>
+                <p><strong>Yappy Compressor Sdn Bhd</strong></p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Yappy Compressor Sdn Bhd. All rights reserved.</p>
+            <p style="margin-top: 0.5rem;">For invoice inquiries, please contact 03-9363033</p>
+        </div>
+    </footer>
+</body>
+</html>

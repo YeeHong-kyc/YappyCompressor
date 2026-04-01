@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - Yappy Compressor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="{{ url_for('static', filename='images/logo.jpg') }}" 
+                     alt="Yappy Compressor Logo" 
+                     class="logo-image"
+                     onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'logo-placeholder\'>YC</div>'">
+                <div class="company-name">Yappy <span>Compressor</span></div>
+            </div>
+            <div class="nav-links">
+                <a href="{{ url_for('company') }}">Company Info</a>
+                <span class="user-info">Welcome, {{ session.username }}!</span>
+                <a href="{{ url_for('index') }}">Home</a>
+                <a href="{{ url_for('logout') }}">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1 style="color: white; text-align: center; margin-bottom: 2rem;">My Orders</h1>
+        
+        <div class="orders-list">
+            {% if orders %}
+                {% set unpaid_orders = orders|selectattr('status', 'equalto', 'Processing')|list %}
+                {% set total_unpaid = unpaid_orders|sum(attribute='total_price') %}
+                
+                {% for o in orders %}
+                <div class="order-item">
+                    <div class="order-details">
+                        <strong>Order #{{ o.order_number }}</strong>
+                        <p><strong>Product:</strong> {{ o.compressor.name }}</p>
+                        <p><strong>Quantity:</strong> {{ o.quantity }} {{ o.compressor.unit }}</p>
+                        <p><strong>Price per unit:</strong> RM {{ "%.2f"|format(o.compressor.price) }}</p>
+                        <p><strong>Total:</strong> RM {{ "%.2f"|format(o.total_price) }}</p>
+                        <p class="order-date"><strong>Date:</strong> {{ o.order_date.strftime('%Y-%m-%d %H:%M') if o.order_date else 'N/A' }}</p>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end;">
+                        <span class="order-status status-{{ o.status.lower() }}">
+                            {{ o.status }}
+                        </span>
+                        {% if o.status == 'Processing' %}
+                        <form action="{{ url_for('remove_order', order_id=o.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to remove Order #{{ o.order_number }}?');">
+                            <button type="submit" class="btn-remove" style="background: #ef4444; color: white; border: none; padding: 0.4rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">
+                                🗑️ Remove Order #{{ o.order_number }}
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <div class="order-summary">
+                    <h3>Order Summary</h3>
+                    <div class="summary-row">
+                        <span>Number of Orders:</span>
+                        <span>{{ orders|length }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Subtotal:</span>
+                        <span>RM {{ "%.2f"|format(orders|sum(attribute='total_price')) }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Shipping:</span>
+                        <span>FREE</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total Amount:</span>
+                        <span>RM {{ "%.2f"|format(orders|sum(attribute='total_price')) }}</span>
+                    </div>
+                </div>
+                
+                {% if unpaid_orders %}
+                <div style="margin-top: 2rem; text-align: center;">
+                    <button class="btn btn-success" style="padding: 1rem 2rem; font-size: 1.1rem;" onclick="openPaymentModal({{ total_unpaid }})">
+                        💳 Pay All (RM {{ "%.2f"|format(total_unpaid) }})
+                    </button>
+                    <p style="color: #64748b; margin-top: 0.5rem; font-size: 0.85rem;">{{ unpaid_orders|length }} pending payment(s)</p>
+                </div>
+                {% else %}
+                <div style="margin-top: 2rem; text-align: center; padding: 1rem; background: #d1fae5; border-radius: 8px;">
+                    <p style="color: #059669;">✓ All orders have been paid!</p>
+                </div>
+                {% endif %}
+            {% else %}
+                <p style="text-align: center; padding: 2rem; color: #475569;">You haven't placed any orders yet.</p>
+                <div style="text-align: center;">
+                    <a href="{{ url_for('index') }}" class="btn">Browse Products</a>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">Continue Shopping</a>
+        </div>
+    </div>
+
+    <div id="paymentModal" class="payment-modal">
+        <div class="payment-container">
+            <h2>Payment Details</h2>
+            <div class="payment-options">
+                <div class="payment-option" onclick="selectPayment('tng')">
+                    <span class="icon">📱</span>
+                    <span class="name">Touch 'n Go</span>
+                </div>
+                <div class="payment-option" onclick="selectPayment('card')">
+                    <span class="icon">💳</span>
+                    <span class="name">Credit Card</span>
+                </div>
+            </div>
+            
+            <div id="tngForm" class="payment-form" style="display: none;">
+                <div class="tng-qr">
+                    <div class="qr-placeholder" style="text-align: center; padding: 1rem;">
+                        <span class="icon" style="font-size: 4rem;">📱💳</span>
+                    </div>
+                    <p class="qr-instruction" style="text-align: center;">Scan QR code with Touch 'n Go eWallet to pay</p>
+                    <p class="qr-instruction" style="text-align: center; font-weight: bold;">Amount: RM <span id="paymentAmount">0.00</span></p>
+                    <p class="qr-instruction" style="text-align: center;">After payment, click "Confirm Payment"</p>
+                </div>
+            </div>
+            
+            <div id="cardForm" class="payment-form" style="display: none;">
+                <div class="form-group">
+                    <label>Card Number</label>
+                    <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+                </div>
+                <div class="form-group">
+                    <label>Cardholder Name</label>
+                    <input type="text" id="cardName" placeholder="John Doe">
+                </div>
+                <div class="form-group">
+                    <label>Expiry Date</label>
+                    <input type="text" id="expiry" placeholder="MM/YY">
+                </div>
+                <div class="form-group">
+                    <label>CVV</label>
+                    <input type="text" id="cvv" placeholder="123" maxlength="3">
+                </div>
+            </div>
+            
+            <div class="payment-actions">
+                <button class="btn-pay" onclick="processPayment()">Confirm Payment</button>
+                <button class="btn-cancel" onclick="closePaymentModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Yappy Compressor Sdn Bhd</h4>
+                <p>No. 19, Jalan Radin Terbagus</p>
+                <p>Bandar Baru Seri Petaling</p>
+                <p>57000 W.P. Kuala Lumpur</p>
+            </div>
+            <div class="footer-section">
+                <h4>Contact Us</h4>
+                <p><span class="contact-icon">📞</span> 03-9363033</p>
+                <p><span class="contact-icon">✉️</span> yappyethantan@yppycomp.com</p>
+            </div>
+            <div class="footer-section">
+                <h4>Payment</h4>
+                <p>Cheque payable to:</p>
+                <p><strong>Yappy Compressor Sdn Bhd</strong></p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Yappy Compressor Sdn Bhd. All rights reserved.</p>
+            <p style="margin-top: 0.5rem;">For invoice inquiries, please contact 03-9363033</p>
+        </div>
+    </footer>
+
+    <script>
+        let currentAmount = 0;
+        let selectedPaymentMethod = null;
+        
+        function openPaymentModal(amount) {
+            currentAmount = amount;
+            document.getElementById('paymentAmount').innerText = amount.toFixed(2);
+            document.getElementById('paymentModal').classList.add('active');
+        }
+        
+        function closePaymentModal() {
+            document.getElementById('paymentModal').classList.remove('active');
+            document.getElementById('tngForm').style.display = 'none';
+            document.getElementById('cardForm').style.display = 'none';
+            selectedPaymentMethod = null;
+            document.querySelectorAll('.payment-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+        }
+        
+        function selectPayment(method) {
+            selectedPaymentMethod = method;
+            document.querySelectorAll('.payment-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            event.target.closest('.payment-option').classList.add('selected');
+            
+            if (method === 'tng') {
+                document.getElementById('tngForm').style.display = 'block';
+                document.getElementById('cardForm').style.display = 'none';
+            } else if (method === 'card') {
+                document.getElementById('tngForm').style.display = 'none';
+                document.getElementById('cardForm').style.display = 'block';
+            }
+        }
+        
+        function processPayment() {
+            if (!selectedPaymentMethod) {
+                alert('Please select a payment method');
+                return;
+            }
+            
+            if (selectedPaymentMethod === 'card') {
+                const cardNumber = document.getElementById('cardNumber').value;
+                const cardName = document.getElementById('cardName').value;
+                const expiry = document.getElementById('expiry').value;
+                const cvv = document.getElementById('cvv').value;
+                
+                if (!cardNumber || !cardName || !expiry || !cvv) {
+                    alert('Please fill in all credit card details');
+                    return;
+                }
+            }
+            
+            alert(`Payment of RM ${currentAmount.toFixed(2)} successful!\nAll pending orders have been paid.`);
+            closePaymentModal();
+            
+            setTimeout(() => {
+                location.reload();
+            }, 500);
+        }
+        
+        window.onclick = function(event) {
+            const modal = document.getElementById('paymentModal');
+            if (event.target === modal) {
+                closePaymentModal();
+            }
+        }
+    </script>
+</body>
+</html>

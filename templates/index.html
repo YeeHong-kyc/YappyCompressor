@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yappy Compressor - Premium HVAC & Compressor Parts</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="{{ url_for('static', filename='images/logo.jpg') }}" 
+                     alt="Yappy Compressor Logo" 
+                     class="logo-image"
+                     onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'logo-placeholder\'>YC</div>'">
+                <div class="company-name">Yappy <span>Compressor</span></div>
+            </div>
+            <div class="nav-links">
+                <a href="{{ url_for('company') }}">Company Info</a>
+                {% if session.user_id %}
+                    <span class="user-info">Welcome, {{ session.username }}!</span>
+                    <a href="{{ url_for('track') }}">My Orders</a>
+                    <a href="{{ url_for('logout') }}">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}">Login</a>
+                    <a href="{{ url_for('register') }}">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="hero">
+            <h1>Yappy Compressor</h1>
+            <p>Your Trusted Partner for HVAC & Compressor Solutions</p>
+            <p style="margin-top: 1rem;">Quality Parts | Competitive Prices | Expert Service</p>
+        </div>
+        
+        {% for category_name, category_products in categories.items() %}
+        <div class="category-section">
+            <h2 class="category-title">{{ category_name }}</h2>
+            <div class="product-grid">
+                {% for product in category_products %}
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="{{ url_for('static', filename='images/' + product.image_file) }}" 
+                             alt="{{ product.name }}"
+                             onerror="this.parentElement.innerHTML='<div class=\'no-image\'>🔧</div>'">
+                    </div>
+                    <div class="product-info">
+                        <div class="product-category">{{ product.category }}</div>
+                        <h3 class="product-name">{{ product.name }}</h3>
+                        <div class="product-price">RM {{ "%.2f"|format(product.price) }}</div>
+                        <div class="product-unit">{{ product.unit }}</div>
+                        <p class="product-description">{{ product.description[:100] }}{% if product.description|length > 100 %}...{% endif %}</p>
+                        {% if session.user_id %}
+                            <a href="{{ url_for('order', product_id=product.id) }}" class="btn">Order Now</a>
+                        {% else %}
+                            <a href="{{ url_for('login') }}" class="btn">Login to Order</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Yappy Compressor Sdn Bhd</h4>
+                <p>No. 19, Jalan Radin Terbagus</p>
+                <p>Bandar Baru Seri Petaling</p>
+                <p>57000 W.P. Kuala Lumpur</p>
+            </div>
+            <div class="footer-section">
+                <h4>Contact Us</h4>
+                <p><span class="contact-icon">📞</span> 03-9363033</p>
+                <p><span class="contact-icon">✉️</span> yappyethantan@yppycomp.com</p>
+            </div>
+            <div class="footer-section">
+                <h4>Payment</h4>
+                <p>Cheque payable to:</p>
+                <p><strong>Yappy Compressor Sdn Bhd</strong></p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Yappy Compressor Sdn Bhd. All rights reserved.</p>
+            <p style="margin-top: 0.5rem;">For invoice inquiries, please contact 03-9363033</p>
+        </div>
+    </footer>
+</body>
+</html>

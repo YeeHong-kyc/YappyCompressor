@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Yappy Compressor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="{{ url_for('static', filename='images/logo.jpg') }}" 
+                     alt="Yappy Compressor Logo" 
+                     class="logo-image"
+                     onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'logo-placeholder\'>YC</div>'">
+                <div class="company-name">Yappy <span>Compressor</span></div>
+            </div>
+            <div class="nav-links">
+                <a href="{{ url_for('company') }}">Company Info</a>
+                <a href="{{ url_for('index') }}">Home</a>
+                <a href="{{ url_for('login') }}">Login</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="form-container">
+        <h1>Register</h1>
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+        <form method="POST">
+            <div class="form-group">
+                <input type="text" name="username" placeholder="Username" required>
+            </div>
+            <div class="form-group">
+                <input type="password" name="password" placeholder="Password" required>
+            </div>
+            <button type="submit" class="btn" style="width: 100%;">Register</button>
+        </form>
+        <p style="text-align: center; margin-top: 1rem;">
+            Already have an account? <a href="{{ url_for('login') }}">Login here</a>
+        </p>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Yappy Compressor Sdn Bhd</h4>
+                <p>No. 19, Jalan Radin Terbagus</p>
+                <p>Bandar Baru Seri Petaling</p>
+                <p>57000 W.P. Kuala Lumpur</p>
+            </div>
+            <div class="footer-section">
+                <h4>Contact Us</h4>
+                <p><span class="contact-icon">📞</span> 03-9363033</p>
+                <p><span class="contact-icon">✉️</span> yappyethantan@yppycomp.com</p>
+            </div>
+            <div class="footer-section">
+                <h4>Payment</h4>
+                <p>Cheque payable to:</p>
+                <p><strong>Yappy Compressor Sdn Bhd</strong></p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Yappy Compressor Sdn Bhd. All rights reserved.</p>
+            <p style="margin-top: 0.5rem;">For invoice inquiries, please contact 03-9363033</p>
+        </div>
+    </footer>
+</body>
+</html>

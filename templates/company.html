@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Info - Yappy Compressor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="{{ url_for('static', filename='images/logo.jpg') }}" 
+                     alt="Yappy Compressor Logo" 
+                     class="logo-image"
+                     onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'logo-placeholder\'>YC</div>'">
+                <div class="company-name">Yappy <span>Compressor</span></div>
+            </div>
+            <div class="nav-links">
+                {% if session.user_id %}
+                    <span class="user-info">Welcome, {{ session.username }}!</span>
+                    <a href="{{ url_for('track') }}">My Orders</a>
+                    <a href="{{ url_for('logout') }}">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}">Login</a>
+                    <a href="{{ url_for('register') }}">Register</a>
+                {% endif %}
+                <a href="{{ url_for('index') }}">Home</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1 style="color: white; text-align: center; margin-bottom: 2rem;">Company Information</h1>
+        
+        <div class="company-info">
+            <div class="company-header">
+                <div>
+                    <div class="company-name-large">Yappy <span>Compressor</span></div>
+                    <p style="color: #64748b; margin-top: 0.5rem;">Your Trusted HVAC & Compressor Partner</p>
+                </div>
+                <img src="{{ url_for('static', filename='images/logo.jpg') }}" 
+                     alt="Yappy Compressor Logo" 
+                     class="company-logo-small"
+                     onerror="this.onerror=null; this.style.display='none'">
+            </div>
+            
+            <div class="company-address">
+                <h3>📍 Office Address</h3>
+                <p>No. 19, Jalan Radin Terbagus</p>
+                <p>Bandar Baru Seri Petaling</p>
+                <p>57000 W.P. Kuala Lumpur</p>
+                <p>Malaysia</p>
+            </div>
+            
+            <div class="payment-info">
+                <h3>💳 Payment Information</h3>
+                <p><strong>Make all checks payable to:</strong></p>
+                <p style="font-size: 1.1rem; font-weight: 600; color: #1e293b; margin: 0.5rem 0;">Yappy Compressor Sdn Bhd</p>
+                <div class="invoice-note">
+                    📄 For all invoices and payments, please reference your Order Number
+                </div>
+            </div>
+            
+            <div class="contact-info">
+                <h3>📞 Contact Information</h3>
+                <div class="contact-details">
+                    <div class="contact-item">
+                        <span class="icon">📞</span>
+                        <span><strong>Phone:</strong> 03-9363033</span>
+                    </div>
+                    <div class="contact-item">
+                        <span class="icon">✉️</span>
+                        <span><strong>Email:</strong> yappyethantan@yppycomp.com</span>
+                    </div>
+                </div>
+                <p style="margin-top: 1rem; color: #64748b; font-size: 0.85rem;">
+                    If you have any questions about your invoice or order, please contact us at 03-9363033 or email yappyethantan@yppycomp.com
+                </p>
+            </div>
+            
+            <div style="margin-top: 2rem; padding: 1rem; background: #dbeafe; border-radius: 8px; text-align: center;">
+                <p style="color: #1e40af;">🕒 Business Hours: Monday - Friday, 9:00 AM - 6:00 PM</p>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="{{ url_for('index') }}" class="btn">Back to Home</a>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Yappy Compressor Sdn Bhd</h4>
+                <p>No. 19, Jalan Radin Terbagus</p>
+                <p>Bandar Baru Seri Petaling</p>
+                <p>57000 W.P. Kuala Lumpur</p>
+            </div>
+            <div class="footer-section">
+                <h4>Contact Us</h4>
+                <p><span class="contact-icon">📞</span> 03-9363033</p>
+                <p><span class="contact-icon">✉️</span> yappyethantan@yppycomp.com</p>
+            </div>
+            <div class="footer-section">
+                <h4>Payment</h4>
+                <p>Cheque payable to:</p>
+                <p><strong>Yappy Compressor Sdn Bhd</strong></p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Yappy Compressor Sdn Bhd. All rights reserved.</p>
+            <p style="margin-top: 0.5rem;">For invoice inquiries, please contact 03-9363033</p>
+        </div>
+    </footer>
+</body>
+</html>
