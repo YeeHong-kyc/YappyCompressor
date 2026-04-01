@@ -7,9 +7,18 @@ from datetime import datetime
 app = Flask(__name__)
 app.secret_key = 'yappy_compressor_secret_key_2024'
 
-# Database configuration
+# Database configuration - Use /tmp/ for Render (writable directory)
 basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'yappy.db')
+
+# Check if running on Render
+if os.environ.get('RENDER'):
+    # On Render, use /tmp/ for database (writable directory)
+    db_path = os.path.join('/tmp', 'yappy.db')
+else:
+    # Local development
+    db_path = os.path.join(basedir, 'yappy.db')
+
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -38,7 +47,7 @@ class Compressor(db.Model):
     
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    order_number = db.Column(db.Integer, nullable=False)  # New field for display order number
+    order_number = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     compressor_id = db.Column(db.Integer, db.ForeignKey('compressor.id'), nullable=False)
     quantity = db.Column(db.Integer, default=1)
@@ -47,48 +56,45 @@ class Order(db.Model):
     order_date = db.Column(db.DateTime, default=datetime.utcnow)
     compressor = db.relationship('Compressor')
 
-# Function to renumber orders after deletion
 def renumber_orders(user_id):
-    """Renumber orders sequentially for a specific user"""
     orders = Order.query.filter_by(user_id=user_id).order_by(Order.order_date).all()
     for index, order in enumerate(orders, 1):
         order.order_number = index
     db.session.commit()
 
-# Sample product data
 def init_products():
     if Compressor.query.count() == 0:
         products = [
             Compressor(name='Compressor', category='Compressor', price=1288.00, unit='unit',
                       image_file='Compressor.web_p',
-                      description='High-quality air conditioning compressor for efficient cooling performance. Essential component for any AC system.'),
+                      description='High-quality air conditioning compressor for efficient cooling performance.'),
             Compressor(name='R32 Refrigerant', category='Refrigerant', price=50.00, unit='per kg',
                       image_file='R32_Refrigerant.png',
-                      description='Environmentally friendly R32 refrigerant gas. Efficient cooling with low environmental impact.'),
+                      description='Environmentally friendly R32 refrigerant gas.'),
             Compressor(name='Aircon Pipes', category='Pipes', price=28.00, unit='per metre',
                       image_file='Aircon_Pipes.avif',
-                      description='Premium copper pipes for air conditioning installation. Durable and corrosion-resistant.'),
+                      description='Premium copper pipes for air conditioning installation.'),
             Compressor(name='Cooling Coil', category='Coils', price=688.00, unit='unit',
                       image_file='Cooling_Coil.png',
-                      description='Efficient cooling coil for heat exchange systems. Maximizes cooling efficiency.'),
+                      description='Efficient cooling coil for heat exchange systems.'),
             Compressor(name='Bearing', category='Bearings', price=128.00, unit='unit',
                       image_file='Bearing.jpg',
-                      description='High-durability bearings for smooth compressor operation. Precision engineered.'),
+                      description='High-durability bearings for smooth compressor operation.'),
             Compressor(name='Screws Bolts', category='Hardware', price=28.00, unit='per box',
                       image_file='Screws & Bolts.webp',
-                      description='Complete set of high-quality screws and bolts. Perfect for installation and maintenance.'),
+                      description='Complete set of high-quality screws and bolts.'),
             Compressor(name='Nuts', category='Hardware', price=28.00, unit='per box',
                       image_file='akU5h7cfJ2TxNut_s_(per box).jpeg',
-                      description='Premium quality nuts for secure fastening. Rust-resistant coating.'),
+                      description='Premium quality nuts for secure fastening.'),
             Compressor(name='Serpentine Belt', category='Belts', price=188.00, unit='unit',
                       image_file='Serpentine_Belt.jpg',
-                      description='Durable serpentine belt for compressor drive systems. Long-lasting performance.'),
+                      description='Durable serpentine belt for compressor drive systems.'),
             Compressor(name='Manifold Gauge Sets', category='Tools', price=288.00, unit='set',
                       image_file='Manifold_Gauge_Set.jpg',
-                      description='Professional manifold gauge set for AC maintenance and repair. Includes carrying case.'),
+                      description='Professional manifold gauge set for AC maintenance and repair.'),
             Compressor(name='Expansion Valves', category='Valves', price=48.00, unit='unit',
                       image_file='Expansion_Valve.jpg',
-                      description='Precision expansion valve for refrigerant flow control. Optimal pressure regulation.'),
+                      description='Precision expansion valve for refrigerant flow control.'),
         ]
         db.session.add_all(products)
         db.session.commit()
@@ -103,6 +109,10 @@ def index():
             categories[product.category] = []
         categories[product.category].append(product)
     return render_template('index.html', categories=categories)
+
+@app.route('/company')
+def company():
+    return render_template('company.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -160,7 +170,6 @@ def place_order(product_id):
     product = Compressor.query.get_or_404(product_id)
     total_price = product.price * quantity
     
-    # Get the next order number for this user
     user_orders = Order.query.filter_by(user_id=session['user_id']).all()
     next_order_number = len(user_orders) + 1
     
@@ -177,13 +186,6 @@ def place_order(product_id):
     
     return redirect(url_for('track'))
 
-# Add this new route to app.py after your existing routes
-
-@app.route('/company')
-def company():
-    return render_template('company.html')
-
-
 @app.route('/remove_order/<int:order_id>', methods=['POST'])
 def remove_order(order_id):
     if 'user_id' not in session:
@@ -191,16 +193,12 @@ def remove_order(order_id):
     
     order = Order.query.get_or_404(order_id)
     
-    # Check if the order belongs to the logged-in user
     if order.user_id != session['user_id']:
         return redirect(url_for('track'))
     
-    # Only allow removal of pending/processing orders (not completed)
     if order.status != 'Completed':
         db.session.delete(order)
         db.session.commit()
-        
-        # Renumber the remaining orders for this user
         renumber_orders(session['user_id'])
     
     return redirect(url_for('track'))
@@ -213,16 +211,16 @@ def track():
     orders = Order.query.filter_by(user_id=session['user_id']).order_by(Order.order_number).all()
     return render_template('track.html', orders=orders)
 
-# Create necessary directories
 def setup_static_files():
     os.makedirs(os.path.join(basedir, 'static', 'images'), exist_ok=True)
     os.makedirs(os.path.join(basedir, 'static', 'css'), exist_ok=True)
 
+# Create database and initialize on startup
+with app.app_context():
+    db.create_all()
+    init_products()
+    setup_static_files()
+
+# For local development
 if __name__ == '__main__':
-    with app.app_context():
-        # Drop all tables and recreate (for the new order_number field)
-        db.drop_all()
-        db.create_all()
-        init_products()
-        setup_static_files()
     app.run(debug=True)
