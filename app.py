@@ -7,15 +7,13 @@ from datetime import datetime
 app = Flask(__name__)
 app.secret_key = 'yappy_compressor_secret_key_2024'
 
-# Database configuration - Use /tmp/ for Render (writable directory)
+# Database configuration
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-# Check if running on Render
+# Use /tmp/ for Render, local folder for development
 if os.environ.get('RENDER'):
-    # On Render, use /tmp/ for database (writable directory)
     db_path = os.path.join('/tmp', 'yappy.db')
 else:
-    # Local development
     db_path = os.path.join(basedir, 'yappy.db')
 
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
@@ -98,6 +96,7 @@ def init_products():
         ]
         db.session.add_all(products)
         db.session.commit()
+        print(f"Added {len(products)} products to database")
 
 # Routes
 @app.route('/')
@@ -215,11 +214,16 @@ def setup_static_files():
     os.makedirs(os.path.join(basedir, 'static', 'images'), exist_ok=True)
     os.makedirs(os.path.join(basedir, 'static', 'css'), exist_ok=True)
 
-# Create database and initialize on startup
+# Initialize database when app starts (important for gunicorn)
 with app.app_context():
-    db.create_all()
-    init_products()
-    setup_static_files()
+    try:
+        db.create_all()
+        print("Database tables created/verified")
+        init_products()
+        setup_static_files()
+        print("App initialization complete!")
+    except Exception as e:
+        print(f"Error during initialization: {e}")
 
 # For local development
 if __name__ == '__main__':
